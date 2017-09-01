@@ -20,7 +20,7 @@ import java.util.Locale;
 /**
  * 作者：JoelZhu
  * 时间：2016年12月02日 10:39
- * 作用：JoelZhuCalendar
+ * 作用：自定义日历控件
  */
 public class JZCalendar extends View {
     // 画笔对象
@@ -91,6 +91,9 @@ public class JZCalendar extends View {
      */
     public JZCalendar(Context context) {
         super(context);
+
+        // 构建控件
+        initCalendar(context, null);
     }
 
     /**
@@ -225,8 +228,8 @@ public class JZCalendar extends View {
                     float nowUpX = event.getX();
                     float nowUpY = event.getY();
                     // 判断移动区域是否超过最小单元单位的一半
-                    if (Math.abs(lastDownX - nowUpX) >= minUnitWidth / 2 || Math.abs(lastDownY - nowUpY) >=
-                            minUnitHeight / 2) {
+                    if (Math.abs(lastDownX - nowUpX) >= minUnitWidth / 2 ||
+                            Math.abs(lastDownY - nowUpY) >= minUnitHeight / 2) {
                         // 如果超过最小单元单位的一半，判定为移动
                         lastDownAt = 0;
                     }
@@ -273,7 +276,8 @@ public class JZCalendar extends View {
         String formatString = "%d年%02d月";
         String monthText = String.format(Locale.getDefault(), formatString, thisYear, monthOfYear + 1);
         Paint.FontMetricsInt fontMetrics = paint.getFontMetricsInt();
-        float heightPosition = (minUnitHeight * 1.5f - fontMetrics.bottom + fontMetrics.top) / 2 - fontMetrics.top;
+        final float heightPosition = (minUnitHeight * 1.5f - fontMetrics.bottom + fontMetrics.top) / 2 -
+                fontMetrics.top;
         paint.getTextBounds(monthText, 0, monthText.length(), rect);
         // 绘制月份条显示内容
         canvas.drawText(monthText, getWidth() / 2 - rect.width() / 2, heightPosition, paint);
@@ -319,19 +323,14 @@ public class JZCalendar extends View {
             paint.reset();
             paint.setAntiAlias(true);
             paint.setTextSize(dateTextSize);
-            // 设置周末文字颜色
-            if (i == 0 || i == 6) {
-                paint.setColor(weekendTextColor);
-            }
-            // 设置正常文字颜色
-            else {
-                paint.setColor(dateTextColor);
-            }
+            // 设置文字颜色
+            paint.setColor(i == 0 || i == 6 ? weekendTextColor : dateTextColor);
             paint.getTextBounds(weeks[i], 0, 1, rect);
             Paint.FontMetricsInt fontMetrics = paint.getFontMetricsInt();
-            float widthPosition = (minUnitWidth - rect.width()) / 2 + (minUnitWidth * i);
-            float heightPosition = (minUnitHeight * 1.5f - fontMetrics.bottom + fontMetrics.top) / 2 - fontMetrics.top;
-            canvas.drawText(weeks[i], widthPosition, heightPosition + minUnitHeight * 1.5f, paint);
+            final float width = (minUnitWidth - rect.width()) / 2 + (minUnitWidth * i);
+            final float height = (minUnitHeight * 1.5f - fontMetrics.bottom + fontMetrics.top) / 2 -
+                    fontMetrics.top;
+            canvas.drawText(weeks[i], width, height + minUnitHeight * 1.5f, paint);
         }
     }
 
@@ -358,8 +357,10 @@ public class JZCalendar extends View {
                 paint.reset();
                 paint.setAntiAlias(true);
                 paint.setColor(todayTextColor);
-                float radius = minUnitWidth <= minUnitHeight ? minUnitWidth * 2 / 5 : minUnitHeight * 2 / 5;
-                canvas.drawCircle(leftPosition + minUnitWidth / 2, topPosition + minUnitHeight / 2, radius, paint);
+                float radius = minUnitWidth <= minUnitHeight ?
+                        minUnitWidth * 2 / 5 : minUnitHeight * 2 / 5;
+                canvas.drawCircle(leftPosition + minUnitWidth / 2, topPosition + minUnitHeight / 2,
+                        radius, paint);
 
                 // 绘制日期文字
                 paint.reset();
@@ -370,39 +371,37 @@ public class JZCalendar extends View {
                 String dateString = date.get(position) + "";
                 paint.getTextBounds(dateString, 0, dateString.length(), rect);
                 Paint.FontMetricsInt fontMetrics = paint.getFontMetricsInt();
-                float widthPosition = (minUnitWidth - rect.width()) / 2 + (minUnitWidth * ((position % 7)));
-                float heightPosition = (minUnitHeight - fontMetrics.bottom + fontMetrics.top) / 2 - fontMetrics.top +
-                        minUnitHeight * ((position / 7) + 3);
-                canvas.drawText(dateString, widthPosition, heightPosition, paint);
+                final float width = (minUnitWidth - rect.width()) / 2 + (minUnitWidth *
+                        ((position % 7)));
+                final float height = (minUnitHeight - fontMetrics.bottom + fontMetrics.top) / 2 -
+                        fontMetrics.top + minUnitHeight * ((position / 7) + 3);
+                canvas.drawText(dateString, width, height, paint);
             } else {
                 // 绘制日期文字
                 paint.reset();
                 paint.setAntiAlias(true);
                 paint.setTextSize(dateTextSize);
                 // 设置今日的字体颜色
-                if (position == todayPosition && showMonthOffset == 0) {
+                if (position == todayPosition && showMonthOffset == 0)
                     paint.setColor(todayTextColor);
-                }
                 // 设置其他月份的字体颜色
-                else if (isPreviousMonth(position) || isNextMonth(position)) {
+                else if (isPreviousMonth(position) || isNextMonth(position))
                     paint.setColor(otherTextColor);
-                }
                 // 设置周末的字体颜色
-                else if (position % 7 == 0 || position % 7 == 6) {
+                else if (position % 7 == 0 || position % 7 == 6)
                     paint.setColor(weekendTextColor);
-                }
                 // 设置正常日期的字体颜色
-                else {
+                else
                     paint.setColor(dateTextColor);
-                }
 
                 String dateString = date.get(position) + "";
                 paint.getTextBounds(dateString, 0, dateString.length(), rect);
                 Paint.FontMetricsInt fontMetrics = paint.getFontMetricsInt();
-                float widthPosition = (minUnitWidth - rect.width()) / 2 + (minUnitWidth * ((position % 7)));
-                float heightPosition = (minUnitHeight - fontMetrics.bottom + fontMetrics.top) / 2 - fontMetrics.top +
-                        minUnitHeight * ((position / 7) + 3);
-                canvas.drawText(dateString, widthPosition, heightPosition, paint);
+                final float width = (minUnitWidth - rect.width()) / 2 + (minUnitWidth *
+                        ((position % 7)));
+                final float height = (minUnitHeight - fontMetrics.bottom + fontMetrics.top) / 2 -
+                        fontMetrics.top + minUnitHeight * ((position / 7) + 3);
+                canvas.drawText(dateString, width, height, paint);
             }
         }
     }
@@ -555,8 +554,8 @@ public class JZCalendar extends View {
             invalidate();
         }
         // 点击的是后一个月按钮
-        else if (clickX > getMeasuredWidth() - minUnitHeight * 1.5f && clickX < getMeasuredWidth() && clickY > 0 &&
-                clickY < minUnitHeight * 1.5f) {
+        else if (clickX > getMeasuredWidth() - minUnitHeight * 1.5f && clickX < getMeasuredWidth() &&
+                clickY > 0 && clickY < minUnitHeight * 1.5f) {
             // 修改偏移量
             showMonthOffset++;
             // 获取后一个月的日历
@@ -642,8 +641,8 @@ public class JZCalendar extends View {
                 invalidate();
             }
             // 点击的是后一个月按钮
-            else if (clickX > getMeasuredWidth() - minUnitHeight * 1.5f && clickX < getMeasuredWidth() && clickY > 0
-                    && clickY < minUnitHeight * 1.5f) {
+            else if (clickX > getMeasuredWidth() - minUnitHeight * 1.5f && clickX < getMeasuredWidth() &&
+                    clickY > 0 && clickY < minUnitHeight * 1.5f) {
                 // 修改偏移量
                 showMonthOffset++;
                 // 获取后一个月的日历
